@@ -129,9 +129,14 @@ Example:
 
 ```python
 def make_squares(key, value=0):
-    """! Return a dictionary and a list...
-    @param value Value parameter with default value of zero (0)
-    @return Retruns tuple of 'd' stuff and 'l' stuff
+    """Return a dictionary and a list.
+
+    Args:
+        key: Key parameter.
+        value: Value parameter with default value of zero (0).
+
+    Returns:
+        Tuple of key:value dict and key, value list.
     """
     d = {key: value}
     l = [key, value]
