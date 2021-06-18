@@ -2,15 +2,16 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
-
+"""Default implementation """
 import re
 import sys
 import traceback
+
 from time import time
 from sre_compile import error
-
 from multiprocessing import Process, Queue
+from queue import Empty as QueueEmpty
+
 from .. import host_tests_plugins, BaseHostTest
 from ..host_tests_registry import HostRegistry
 
@@ -27,11 +28,6 @@ from .host_test import DefaultTestSelectorBase
 from ..host_tests_logger import HtrunLogger
 from ..host_tests_conn_proxy import conn_process
 from ..host_tests_toolbox.host_functional import handle_send_break_cmd
-
-if sys.version_info > (3, 0):
-    from queue import Empty as QueueEmpty
-else:
-    from Queue import Empty as QueueEmpty
 
 
 class DefaultTestSelector(DefaultTestSelectorBase):

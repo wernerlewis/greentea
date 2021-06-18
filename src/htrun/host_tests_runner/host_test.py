@@ -8,7 +8,7 @@ from .target_base import TargetBase
 from . import __version__
 
 
-class HostTestResults(object):
+class HostTestResults:
     """! Test results set by host tests """
 
     def enum(self, **enums):
