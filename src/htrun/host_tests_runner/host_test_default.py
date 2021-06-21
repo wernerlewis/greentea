@@ -182,8 +182,7 @@ class DefaultTestSelector(DefaultTestSelectorBase):
         def start_conn_process():
             # DUT-host communication process
             args = (event_queue, dut_event_queue, config)
-            p = Process(target=conn_process, args=args)
-            p.deamon = True
+            p = Process(target=conn_process, args=args, daemon=True)
             p.start()
             return p
 
