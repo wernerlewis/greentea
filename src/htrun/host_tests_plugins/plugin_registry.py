@@ -4,7 +4,7 @@
 #
 
 
-class HostTestRegistry:
+class HostTestPluginRegistry:
     """Simple class used to register and store
     host test plugins for further usage
     """

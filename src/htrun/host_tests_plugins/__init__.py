@@ -10,7 +10,7 @@ This package can be extended with new packages to add more generic functionality
 
 """
 
-from . import host_test_registry
+from . import plugin_registry
 
 # This plugins provide 'flashing' and 'reset' methods to host test scripts
 from . import module_copy_shell
@@ -35,7 +35,7 @@ from . import module_copy_mps2
 
 
 # Plugin registry instance
-HOST_TEST_PLUGIN_REGISTRY = host_test_registry.HostTestRegistry()
+HOST_TEST_PLUGIN_REGISTRY = plugin_registry.HostTestPluginRegistry()
 
 # Static plugin registration
 # Some plugins are commented out if they are not stable or not commonly used
