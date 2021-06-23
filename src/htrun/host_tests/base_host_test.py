@@ -2,16 +2,19 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Base classes for implementing host test classes."""
 import inspect
 import six
 from time import time
 from inspect import isfunction, ismethod
 
 
-class BaseHostTestAbstract(object):
-    """Base class for each host-test test cases with standard
-    setup, test and teardown set of functions
+class BaseHostTestAbstract:
+    """Abstract base class for host tests, with setup, test, and teardown methods.
+
+    Attributes:
+        name: Name of the host test, used for local registration.
+        script_location: Path to the source file the host test is loaded from.
     """
 
     name = ""  # name of the host test (used for local registration)
@@ -33,81 +36,100 @@ class BaseHostTestAbstract(object):
             self.__event_queue.put(("__notify_sync_failed", text, time()))
 
     def __notify_dut(self, key, value):
-        """! Send data over serial to DUT """
+        """Send data over serial to DUT."""
         if self.__dut_event_queue:
             self.__dut_event_queue.put((key, value, time()))
 
     def notify_complete(self, result=None):
-        """! Notify main even loop that host test finished processing
-        @param result True for success, False failure. If None - no action in main even loop
+        """Notify main event loop that host test finished processing.
+
+        Args:
+            result: True if success, False if failure. If None, no action in main event
+            loop.
         """
         if self.__event_queue:
             self.__event_queue.put(("__notify_complete", result, time()))
 
     def reset_dut(self, value):
-        """
-        Reset device under test
-        :return:
+        """Reset device under test.
+
+        Args:
+            value: Value representing reset type.
         """
         if self.__event_queue:
             self.__event_queue.put(("__reset_dut", value, time()))
 
     def reset(self):
-        """
-        Reset the device under test and continue running the host test
-        :return:
-        """
+        """Reset the device under test and continue running the host test."""
         if self.__event_queue:
             self.__event_queue.put(("__reset", "0", time()))
 
     def notify_conn_lost(self, text):
-        """! Notify main even loop that there was a DUT-host test connection error
-        @param consume If True htrun will process (consume) all remaining events
+        """Notify main event loop of a DUT-host test connection error.
+
+        Args:
+            text: Text to be added to the event queue.
         """
         self.__notify_conn_lost(text)
 
     def log(self, text):
-        """! Send log message to main event loop """
+        """Send log message to main event loop.
+
+        Args:
+            text: Log message to send.
+        """
         self.__notify_prn(text)
 
     def send_kv(self, key, value):
-        """! Send Key-Value data to DUT """
+        """Send Key-Value data to DUT.
+
+        Args:
+            key: Key to send.
+            value: Value to send.
+        """
         self.__notify_dut(key, value)
 
     def setup_communication(self, event_queue, dut_event_queue, config={}):
-        """! Setup queues used for IPC """
-        self.__event_queue = event_queue  # To main even loop
-        self.__dut_event_queue = dut_event_queue  # To DUT
+        """Configure class for communication.
+
+        Args:
+            event_queue: Main event loop queue.
+            dut_event_queue: Event queue for communication with DUT.
+            config: Dictionary object storing configuration data.
+        """
+        self.__event_queue = event_queue
+        self.__dut_event_queue = dut_event_queue
         self.__config = config
 
     def get_config_item(self, name):
-        """
-        Return test config
+        """Get an item from the host test configuration.
 
-        :param name:
-        :return:
+        Args:
+            name: Key of the item to get.
+
+        Returns:
+            Value from the config.
         """
         return self.__config.get(name, None)
 
     def setup(self):
-        """! Setup your tests and callbacks """
+        """Register tests and callbacks."""
         raise NotImplementedError
 
     def result(self):
-        """! Returns host test result (True, False or None) """
+        """Return host test result."""
         raise NotImplementedError
 
     def teardown(self):
-        """! Blocking always guaranteed test teardown """
+        """Teardown test. Blocking method."""
         raise NotImplementedError
 
 
 def event_callback(key):
-    """
-    Decorator for defining a event callback method. Adds a property attribute "event_key" with value as the passed key.
+    """Define decorator for an event callback method.
 
-    :param key:
-    :return:
+    Args:
+        key: value to assign to attribute "event_key".
     """
 
     def decorator(func):
@@ -118,7 +140,10 @@ def event_callback(key):
 
 
 class HostTestCallbackBase(BaseHostTestAbstract):
+    """Class implementing callbacks for HostTestBase."""
+
     def __init__(self):
+        """Initialize object."""
         BaseHostTestAbstract.__init__(self)
         self.__callbacks = {}
         self.__restricted_callbacks = [
@@ -144,43 +169,26 @@ class HostTestCallbackBase(BaseHostTestAbstract):
         self.__assign_decorated_callbacks()
 
     def __callback_default(self, key, value, timestamp):
-        """! Default callback """
         # self.log("CALLBACK: key=%s, value=%s, timestamp=%f"% (key, value, timestamp))
         pass
 
     def __default_end_callback(self, key, value, timestamp):
-        """
-        Default handler for event 'end' that gives test result from target.
-        This callback is not decorated as we don't know then in what order this
-        callback would be registered. We want to let users over write this callback.
-        Hence it should be registered before registering user defined callbacks.
-
-        :param key:
-        :param value:
-        :param timestamp:
-        :return:
-        """
         self.notify_complete(value == "success")
 
     def __assign_default_callbacks(self):
-        """! Assigns default callback handlers """
         for key in self.__consume_by_default:
             self.__callbacks[key] = self.__callback_default
-        # Register default handler for event 'end' before assigning user defined callbacks to let users over write it.
         self.register_callback("end", self.__default_end_callback)
 
     def __assign_decorated_callbacks(self):
-        """
-        It looks for any callback methods decorated with @event_callback
+        """Register callback methods decorated with @event_callback.
 
         Example:
-        Define a method with @event_callback decorator like:
+        Define a method with @event_callback decorator:
 
          @event_callback('<event key>')
          def event_handler(self, key, value, timestamp):
             do something..
-
-        :return:
         """
         for name, method in inspect.getmembers(self, inspect.ismethod):
             key = getattr(method, "event_key", None)
@@ -188,22 +196,22 @@ class HostTestCallbackBase(BaseHostTestAbstract):
                 self.register_callback(key, method)
 
     def register_callback(self, key, callback, force=False):
-        """! Register callback for a specific event (key: event name)
-        @param key String with name of the event
-        @param callback Callable which will be registstered for event "key"
-        @param force God mode
-        """
+        """Register callback for a specific event.
 
-        # Non-string keys are not allowed
+        Args:
+            key: String with name of the event.
+            callback: Callable which will be registered for event "key".
+            force: If True, don't check if key is reserved or restricted.
+        """
         if type(key) is not str:
             raise TypeError("event non-string keys are not allowed")
 
-        # And finally callback should be callable
         if not callable(callback):
             raise TypeError("event callback should be callable")
 
-        # Check if callback has all three required parameters (key, value, timestamp)
-        # When callback is class method should have 4 arguments (self, key, value, timestamp)
+        # Check if callback has all required parameters
+        # If callback is a class method, it should have 4 arguments
+        # (self, key, value, timestamp)
         if ismethod(callback):
             arg_count = six.get_function_code(callback).co_argcount
             if arg_count != 4:
@@ -218,7 +226,7 @@ class HostTestCallbackBase(BaseHostTestAbstract):
                 )
                 raise TypeError(err_msg)
 
-        # When callback is just a function should have 3 arguments func(key, value, timestamp)
+        # If callback is a function, it should have 3 arguments (key, value, timestamp)
         if isfunction(callback):
             arg_count = six.get_function_code(callback).co_argcount
             if arg_count != 3:
@@ -234,11 +242,9 @@ class HostTestCallbackBase(BaseHostTestAbstract):
                 raise TypeError(err_msg)
 
         if not force:
-            # Event starting with '__' are reserved
             if key.startswith("__"):
                 raise ValueError("event key starting with '__' are reserved")
 
-            # We predefined few callbacks you can't use
             if key in self.__restricted_callbacks:
                 raise ValueError(
                     "we predefined few callbacks you can't use e.g. '%s'" % key
@@ -247,30 +253,40 @@ class HostTestCallbackBase(BaseHostTestAbstract):
         self.__callbacks[key] = callback
 
     def get_callbacks(self):
+        """Get registered callbacks.
+
+        Returns:
+            Dict with event name: callback pairs.
+        """
         return self.__callbacks
 
     def setup(self):
+        """Register tests and callbacks."""
         pass
 
     def result(self):
+        """Return host test result."""
         pass
 
     def teardown(self):
+        """Blocking, teardown test."""
         pass
 
 
 class BaseHostTest(HostTestCallbackBase):
+    """Base Class for Host Tests."""
 
     __BaseHostTest_Called = False
 
     def base_host_test_inited(self):
-        """This function will check if BaseHostTest ctor was called
-        Call to BaseHostTest is required in order to force required
-        interfaces implementation.
-        @return Returns True if ctor was called (ok behaviour)
+        """Ensure BaseHostTest has been initialized.
+
+        Returns:
+            True if constructor has been called, else False.
         """
         return self.__BaseHostTest_Called
 
     def __init__(self):
+        """Initialize object."""
         HostTestCallbackBase.__init__(self)
         self.__BaseHostTest_Called = True

@@ -13,9 +13,10 @@ from htrun.host_tests_toolbox.host_functional import handle_send_break_cmd
 
 
 def main():
-    """! This function drives command line tool 'htrun' which is using DefaultTestSelector
-    @details 1. Create DefaultTestSelector object and pass command line parameters
-             2. Call default test execution function run() to start test instrumentation
+    """Entry point for command line tool 'htrun' using DefaultTestSelector.
+
+    Create DefaultTestSelector object and pass command line parameters.
+    Call default test execution function run() to start test instrumentation.
     """
     freeze_support()
     result = 0

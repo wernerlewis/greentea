@@ -2,24 +2,27 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Target representation class."""
 import json
 import os
+
 from time import sleep
-from .. import host_tests_plugins as ht_plugins
 from mbed_lstools.main import create
+
+from .. import host_tests_plugins as ht_plugins
 from .. import DEFAULT_BAUD_RATE
 from ..host_tests_logger import HtrunLogger
 
 
 class TargetBase:
-    """! TargetBase class for a host driven test
-    @details This class stores information about things like disk, port, serial speed etc.
-             Class is also responsible for manipulation of serial port between host and mbed device
+    """Base representation of target DUT.
+
+    Stores information related to host-target connection: disk, port, serial speed, etc.
+    Responsible for manipulation of serial port between host and DUT.
     """
 
     def __init__(self, options):
-        """ctor"""
+        """Initialise object."""
         self.options = options
         self.logger = HtrunLogger("Greentea")
         # Options related to copy / reset the connected target device
@@ -45,8 +48,8 @@ class TargetBase:
         self.serial_baud = DEFAULT_BAUD_RATE
         self.serial_timeout = 1
 
-        # Users can use command to pass port speeds together with port name. E.g. COM4:115200:1
-        # Format if PORT:SPEED:TIMEOUT
+        # Users can use command to pass port speeds together with port name.
+        # Format if PORT:SPEED:TIMEOUT: COM4:115200:1
         port_config = self.port.split(":") if self.port else ""
         if len(port_config) == 2:
             # -p COM4:115200
@@ -83,7 +86,7 @@ class TargetBase:
                         json_test_configuration_path, e.errno, e.strerror
                     )
                 )
-            except:
+            except Exception as e:
                 self.logger.prn_err("Test configuration JSON Unexpected error:", str(e))
                 raise
 
@@ -96,15 +99,28 @@ class TargetBase:
         mcu=None,
         retry_copy=5,
     ):
-        """! Closure for copy_image_raw() method.
-        @return Returns result from copy plugin
+        """Closure for copy_image_raw() method.
+
+        Args:
+            image_path: Path to image to copy.
+            disk: Disk path of DUT.
+            copy_method: Copy method to use, if enabled by plugins.
+            port: Port DUT is connected on.
+            mcu: Platform name of the DUT.
+
+        Returns:
+            Result from copy plugin.
         """
 
         def get_remount_count(disk_path, tries=2):
-            """! Get the remount count from 'DETAILS.TXT' file
-            @return Returns count, None if not-available
-            """
+            """Get the remount count from 'DETAILS.TXT' file.
 
+            Args:
+                disk_path: Disk path of DUT.
+
+            Returns:
+                Count, or None if not available.
+            """
             # In case of no disk path, nothing to do
             if disk_path is None:
                 return None
@@ -137,8 +153,15 @@ class TargetBase:
             return None
 
         def check_flash_error(target_id, disk, initial_remount_count):
-            """! Check for flash errors
-            @return Returns false if FAIL.TXT present, else true
+            """Check for flash errors.
+
+            Args:
+                target_id: ID of DUT.
+                disk: Mount disk of DUT.
+                initial_remount_count: Initial remount count from `DETAILS.TXT`.
+
+            Returns:
+                False if FAIL.TXT present, else True.
             """
             if not target_id:
                 self.logger.prn_wrn(
@@ -149,7 +172,8 @@ class TargetBase:
             bad_files = set(["FAIL.TXT"])
             # Re-try at max 5 times with 0.5 sec in delay
             for i in range(5):
-                # mbed_lstools.main.create() should be done inside the loop. Otherwise it will loop on same data.
+                # mbed_lstools.main.create() should be done inside the loop, to avoid
+                # looping on same data.
                 mbeds = create()
                 mbed_list = mbeds.list_mbeds()  # list of mbeds present
                 # get first item in list with a matching target_id, if present
@@ -162,10 +186,10 @@ class TargetBase:
                         "mount_point" in mbed_target
                         and mbed_target["mount_point"] is not None
                     ):
-                        if not initial_remount_count is None:
+                        if initial_remount_count is not None:
                             new_remount_count = get_remount_count(disk)
                             if (
-                                not new_remount_count is None
+                                new_remount_count is not None
                                 and new_remount_count == initial_remount_count
                             ):
                                 sleep(0.5)
@@ -180,7 +204,7 @@ class TargetBase:
                                 ]
                             )
                             common_items = bad_files.intersection(items)
-                        except OSError as e:
+                        except OSError:
                             print("Failed to enumerate disk files, retrying")
                             continue
 
@@ -244,15 +268,18 @@ class TargetBase:
     def copy_image_raw(
         self, image_path=None, disk=None, copy_method=None, port=None, mcu=None
     ):
-        """! Copy file depending on method you want to use. Handles exception
-             and return code from shell copy commands.
-        @return Returns result from copy plugin
-        @details Method which is actually copying image to connected target
-        """
-        # image_path - Where is binary with target's firmware
+        """Copy file using selected copy method.
 
-        # Select copy_method
-        # We override 'default' method with 'shell' method
+        Args:
+            image_path: Path to image to copy.
+            disk: Disk path of DUT.
+            copy_method: Copy method to use, if enabled by plugins.
+            port: Port DUT is connected on.
+            mcu: Platform name of the DUT.
+
+        Returns:
+            Result from copy plugin.
+        """
         copy_method = {
             None: "shell",
             "default": "shell",
@@ -271,10 +298,10 @@ class TargetBase:
         return result
 
     def hw_reset(self):
-        """
-        Performs hardware reset of target ned device.
+        """Perform hardware reset of target DUT.
 
-        :return:
+        Returns:
+            Result from calling reset on target.
         """
         device_info = {}
         result = ht_plugins.call_plugin(

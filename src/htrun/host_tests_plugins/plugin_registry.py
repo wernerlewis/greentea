@@ -2,35 +2,32 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Registry to store and access available plugins."""
 from prettytable import PrettyTable, HEADER
 
 
 class HostTestPluginRegistry:
-    """Simple class used to register and store
-    host test plugins for further usage
-    """
+    """Registry storing plugins and objects representing them."""
 
     # Here we actually store all the plugins
     PLUGINS = {}  # 'Plugin Name' : Plugin Object
 
     def print_error(self, text):
-        """! Prints error directly on console
+        """Print error directly to console.
 
-        @param text Error message text message
+        Args:
+            text: Error message.
         """
         print("Plugin load failed. Reason: %s" % text)
 
     def register_plugin(self, plugin):
-        """! Registers and stores plugin inside registry for further use.
+        """Register and store plugin in registry.
 
-        @param plugin Plugin name
+        Args:
+            plugin: Plugin object to register.
 
-        @return True if plugin setup was successful and plugin can be registered, else False
-
-        @details Method also calls plugin's setup() function to configure plugin if needed.
-                 Note: Different groups of plugins may demand different extra parameter. Plugins
-                 should be at least for one type of plugin configured with the same parameters
-                 because we do not know which of them will actually use particular parameter.
+        Returns:
+            True if plugin setup and registration successful, else False.
         """
         # TODO:
         # - check for unique caps for specified type
@@ -45,12 +42,16 @@ class HostTestPluginRegistry:
         return False
 
     def call_plugin(self, type, capability, *args, **kwargs):
-        """! Execute plugin functionality respectively to its purpose
-        @param type Plugin type
-        @param capability Plugin capability name
-        @param args Additional plugin parameters
-        @param kwargs Additional plugin parameters
-        @return Returns result from plugin's execute() method
+        """Call plugin from registry.
+
+        Args:
+            type: Plugin type.
+            capability: Plugin capability to call.
+            args: Additional parameters passed to plugin.
+            kwargs: Additional parameters passed to plugin.
+
+        Returns:
+            Value returned from plugin call.
         """
         for plugin_name in self.PLUGINS:
             plugin = self.PLUGINS[plugin_name]
@@ -59,9 +60,13 @@ class HostTestPluginRegistry:
         return False
 
     def get_plugin_caps(self, type):
-        """! Returns list of all capabilities for plugin family with the same type
-        @param type Plugin type
-        @return Returns list of capabilities for plugin. If there are no capabilities empty list is returned
+        """Get list of all capabilities for plugin of a set type.
+
+        Args:
+            type: Type of plugin to get.
+
+        Returns:
+            List of all capabilities matching type.
         """
         result = []
         for plugin_name in self.PLUGINS:
@@ -71,16 +76,22 @@ class HostTestPluginRegistry:
         return sorted(result)
 
     def load_plugin(self, name):
-        """! Used to load module from system (by import)
-        @param name name of the module to import
-        @return Returns result of __import__ operation
+        """Load module from system (by import).
+
+        Args:
+            name: Name of the module to import.
+
+        Returns:
+            Result of __import__ operation.
         """
         mod = __import__("module_%s" % name)
         return mod
 
     def get_string(self):
-        """! User friendly printing method to show hooked plugins
-        @return Returns string formatted with PrettyTable
+        """Get tabulated plugin information.
+
+        Returns:
+            String with formatted prettytable.
         """
         column_names = [
             "name",
@@ -114,7 +125,11 @@ class HostTestPluginRegistry:
         return pt.get_string()
 
     def get_dict(self):
-        column_names = ["name", "type", "capabilities", "stable"]
+        """Get dictionary with plugin information.
+
+        Returns:
+            Dictionary with information about plugins.
+        """
         result = {}
         for plugin_name in sorted(self.PLUGINS.keys()):
             name = self.PLUGINS[plugin_name].name
@@ -134,4 +149,5 @@ class HostTestPluginRegistry:
         return result
 
     def __str__(self):
+        """Return prettytable formatted data."""
         return self.get_string()

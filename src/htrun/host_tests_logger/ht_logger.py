@@ -2,17 +2,17 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
-
+"""htrun logging implementation."""
 import sys
 import logging
 from functools import partial
 
 
 class HtrunLogger(object):
-    """! Yet another logger flavour """
+    """Logger which uses htrun format with 3 letter logger levels."""
 
     def __init__(self, name):
+        """Initialize object."""
         logging.basicConfig(
             stream=sys.stdout,
             format="[%(created).2f][%(name)s]%(message)s",

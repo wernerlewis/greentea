@@ -2,13 +2,15 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Shell copy plugins."""
 import os
 from os.path import join, basename
 from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
+    """Plugin with shell flashing methods."""
+
     # Plugin interface
     name = "HostTestPluginCopyMethod_Shell"
     type = "CopyMethod"
@@ -17,21 +19,23 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
     required_parameters = ["image_path", "destination_disk"]
 
     def __init__(self):
-        """ctor"""
+        """Initialise object."""
         HostTestPluginBase.__init__(self)
 
     def setup(self, *args, **kwargs):
-        """Configure plugin, this function should be called before plugin execute() method is used."""
+        """Configure plugin."""
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """! Executes capability by name
+        """Execute capability by name.
 
-        @param capability Capability name
-        @param args Additional arguments
-        @param kwargs Additional arguments
-        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-        @return Capability call return value
+        Args:
+            capability: Capability name, shutil to copy.
+            args: Additional arguments.
+            kwargs: Additional arguments.
+
+        Returns:
+            True if copy successful, else False.
         """
         if not kwargs["image_path"]:
             self.print_plugin_error("Error: image path not specified")
@@ -83,5 +87,9 @@ class HostTestPluginCopyMethod_Shell(HostTestPluginBase):
 
 
 def load_plugin():
-    """Returns plugin available in this module"""
+    """Get plugin available in this module.
+
+    Returns:
+        Plugin object.
+    """
     return HostTestPluginCopyMethod_Shell()

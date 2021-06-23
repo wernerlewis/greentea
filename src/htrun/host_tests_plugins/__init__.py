@@ -3,11 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-"""! @package greentea-host-test-plugins
+"""Plugins used by host tests to reset and flash DUT.
 
-This package contains plugins used by host test to reset, flash devices etc.
-This package can be extended with new packages to add more generic functionality
-
+This package can be extended for additional flash and reset methods.
 """
 
 from . import plugin_registry
@@ -60,34 +58,46 @@ HOST_TEST_PLUGIN_REGISTRY.register_plugin(module_copy_ublox.load_plugin())
 
 # TODO: extend plugin loading to files with name module_*.py loaded ad-hoc
 
+
 ###############################################################################
 # Functional interface for host test plugin registry
 ###############################################################################
 def call_plugin(type, capability, *args, **kwargs):
-    """! Interface to call plugin registry functional way
-    @param capability Plugin capability we want to call
-    @param args Additional parameters passed to plugin
-    @param kwargs Additional parameters passed to plugin
-    @return Returns return value from call_plugin call
+    """Call plugin from registry.
+
+    Args:
+        type: Plugin type.
+        capability: Plugin capability to call.
+        args: Additional parameters passed to plugin.
+        kwargs: Additional parameters passed to plugin.
+
+    Returns:
+        Value returned from plugin call.
     """
     return HOST_TEST_PLUGIN_REGISTRY.call_plugin(type, capability, *args, **kwargs)
 
 
 def get_plugin_caps(type):
-    """! Get list of all capabilities for plugin family with the same type
-    @param type Type of a plugin
-    @return Returns list of all capabilities for plugin family with the same type. If there are no capabilities empty list is returned
+    """Get list of all capabilities for plugin of a set type.
+
+    Args:
+        type: Type of plugin to get.
+
+    Returns:
+        List of all capabilities matching type.
     """
     return HOST_TEST_PLUGIN_REGISTRY.get_plugin_caps(type)
 
 
 def get_plugin_info():
-    """! Return plugins information
-    @return Dictionary HOST_TEST_PLUGIN_REGISTRY
+    """Get plugin info.
+
+    Returns:
+        Dictionary formatted from HOST_TEST_PLUGIN_REGISTRY.
     """
     return HOST_TEST_PLUGIN_REGISTRY.get_dict()
 
 
 def print_plugin_info():
-    """! Prints plugins' information in user friendly way"""
+    """Print plugins information in human readable way."""
     print(HOST_TEST_PLUGIN_REGISTRY)

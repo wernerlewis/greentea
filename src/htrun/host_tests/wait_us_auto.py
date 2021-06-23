@@ -2,15 +2,12 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
-from time import time
+"""Host test measuring deviation between microsecond ticks."""
 from .. import BaseHostTest
 
 
 class WaitusTest(BaseHostTest):
-    """This test is reading single characters from stdio
-    and measures time between their occurrences.
-    """
+    """Read single characters from stdio and measure time between occurrences."""
 
     __result = None
     DEVIATION = 0.10  # +/-10%
@@ -20,16 +17,32 @@ class WaitusTest(BaseHostTest):
         self.notify_complete()
 
     def _callback_tick(self, key, value, timestamp):
-        """ {{tick;%d}}} """
+        """Append tick of format: {{tick;%d}} to list."""
         self.log("tick! " + str(timestamp))
         self.ticks.append((key, value, timestamp))
 
     def setup(self):
+        """Register callbacks."""
         self.register_callback("exit", self._callback_exit)
         self.register_callback("tick", self._callback_tick)
 
     def result(self):
+        """Check if all tick deltas were within allowed deviation.
+
+        Returns:
+            True if delta between each tick was within DEVIATION, else False.
+        """
+
         def sub_timestamps(t1, t2):
+            """Check if delta between timestamps is within allowed deviation.
+
+            Args:
+                t1: Timestamp of later tick.
+                t2: Timestamp of earlier tick.
+
+            Returns:
+                True if delta is in allowed deviation, else False.
+            """
             delta = t1 - t2
             deviation = abs(delta - 1.0)
             # return True if delta > 0 and deviation <= self.DEVIATION else False
@@ -48,4 +61,5 @@ class WaitusTest(BaseHostTest):
         return self.__result
 
     def teardown(self):
+        """No teardown required."""
         pass

@@ -2,13 +2,14 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Reset plugin using serial connection."""
+from termios import error as termios_err
 
-import re
-import pkg_resources
 from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginResetMethod_Target(HostTestPluginBase):
+    """Generic reset method with serial connection."""
 
     # Plugin interface
     name = "HostTestPluginResetMethod_Target"
@@ -18,26 +19,25 @@ class HostTestPluginResetMethod_Target(HostTestPluginBase):
     required_parameters = ["serial"]
 
     def __init__(self):
-        """! ctor
-        @details We can check module version by referring to version attribute
-        import pkg_resources
-        print pkg_resources.require("htrun")[0].version
-        '2.7'
-        """
+        """Initialise object."""
         HostTestPluginBase.__init__(self)
 
     def safe_sendBreak(self, serial):
-        """! pyserial 3.x API implementation of send_brea / break_condition
-        @details
-        http://pyserial.readthedocs.org/en/latest/pyserial_api.html#serial.Serial.send_break
-        http://pyserial.readthedocs.org/en/latest/pyserial_api.html#serial.Serial.break_condition
+        """Send break condition over serial.
+
+        Args:
+            serial: Serial connection to use.
+
+        Returns:
+            True on success, else False.
         """
         result = True
         try:
             serial.send_break()
-        except:
+        except termios_err:
             # In Linux a termios.error is raised in sendBreak and in setBreak.
-            # The following break_condition = False is needed to release the reset signal on the target mcu.
+            # The following break_condition = False is needed to release the reset
+            # signal on the target mcu.
             try:
                 serial.break_condition = False
             except Exception as e:
@@ -48,17 +48,19 @@ class HostTestPluginResetMethod_Target(HostTestPluginBase):
         return result
 
     def setup(self, *args, **kwargs):
-        """! Configure plugin, this function should be called before plugin execute() method is used."""
+        """Configure plugin."""
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """! Executes capability by name
+        """Execute capability by name.
 
-        @param capability Capability name
-        @param args Additional arguments
-        @param kwargs Additional arguments
-        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-        @return Capability call return value
+        Args:
+            capability: Capability name, serial to reset.
+            args: Additional arguments.
+            kwargs: Additional arguments.
+
+        Returns:
+            True if copy successful, else False.
         """
         if not kwargs["serial"]:
             self.print_plugin_error("Error: serial port not set (not opened?)")
@@ -74,5 +76,9 @@ class HostTestPluginResetMethod_Target(HostTestPluginBase):
 
 
 def load_plugin():
-    """! Returns plugin available in this module"""
+    """Get plugin available in this module.
+
+    Returns:
+        Plugin object.
+    """
     return HostTestPluginResetMethod_Target()

@@ -2,22 +2,30 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Tools for handling DUT."""
 import sys
 import json
+
 from time import sleep
 from serial import Serial, SerialException
+
 from .. import host_tests_plugins, DEFAULT_BAUD_RATE
 
 
 def flash_dev(
     disk=None, image_path=None, copy_method="default", port=None, program_cycle_s=4
 ):
-    """! Flash device using pythonic interface
-    @param disk Switch -d <disk>
-    @param image_path Switch -f <image_path>
-    @param copy_method Switch -c <copy_method> (default: shell)
-    @param port Switch -p <port>
+    """Flash device.
+
+    Args:
+        disk: Currently mounted device disk (mount point).
+        image_path: Path to binary file for flashing.
+        copy_method: Copy method to use.
+        port: Port DUT is connected on.
+        program_cycle_s: Seconds to sleep after flashing.
+
+    Returns:
+        Result from copy plugin.
     """
     if copy_method == "default":
         copy_method = "shell"
@@ -43,18 +51,18 @@ def reset_dev(
     timeout=1,
     verbose=False,
 ):
-    """! Reset device using pythonic interface
-    @param port Switch -p <port>
-    @param disk Switch -d <disk>
-    @param reset_type Switch -r <reset_type>
-    @param reset_timeout Switch -R <reset_timeout>
-    @param serial_port Serial port handler, set to None if you want this function to open serial
+    """Reset device.
 
-    @param baudrate Serial port baudrate
-    @param timeout Serial port timeout
-    @param verbose Verbose mode
+    Args:
+        port: Port DUT is connected on.
+        disk: Currently mounted device disk (mount point).
+        reset_type: Reset method to use.
+        reset_timeout Switch -R <reset_timeout>.
+        serial_port: If set, don't use Serial connection.
+        baudrate: Serial port baudrate.
+        timeout: Serial port timeout.
+        verbose: Verbose mode.
     """
-
     result = False
     if not serial_port:
         try:
@@ -73,8 +81,18 @@ def reset_dev(
 def handle_send_break_cmd(
     port, disk, reset_type=None, baudrate=None, timeout=1, verbose=False
 ):
-    """! Resets platforms and prints serial port output
-    @detail Mix with switch -r RESET_TYPE and -p PORT for versatility
+    """Reset platforms and print serial port output.
+
+    Args:
+        port: Port DUT is connected on.
+        disk: Currently mounted device disk (mount point).
+        reset_type: Reset method to use.
+        baudrate: Serial port baudrate.
+        timeout: Serial port timeout.
+        verbose: Verbose mode.
+
+    Returns:
+        True if successful, else False.
     """
     if not reset_type:
         reset_type = "default"

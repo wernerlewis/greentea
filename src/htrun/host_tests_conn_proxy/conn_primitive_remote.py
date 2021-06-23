@@ -2,14 +2,17 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Basic connector interface for use with remote connections."""
 import time
 from .. import DEFAULT_BAUD_RATE
 from .conn_primitive import ConnectorPrimitive
 
 
 class RemoteConnectorPrimitive(ConnectorPrimitive):
+    """Connector interface for remote clients (Global Resource Manager)."""
+
     def __init__(self, name, config, importer=__import__):
+        """Initialise object."""
         ConnectorPrimitive.__init__(self, name)
         self.config = config
         self.target_id = self.config.get("target_id", None)
@@ -42,9 +45,15 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         self.__remote_init(importer)
 
     def __remote_init(self, importer):
-        """! Initialize DUT using GRM APIs """
+        """Initialise DUT using GRM APIs.
 
-        # We want to load global resource manager module by name from command line (switch --grm)
+        Args:
+            importer: Importer function to import GRM module.
+
+        Returns:
+            True if successfully initialises, else False.
+        """
+        # We want to load global resource manager module by name from command line
         try:
             self.remote_module = importer(self.grm_module)
         except ImportError as error:
@@ -90,7 +99,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         return True
 
     def __remote_connect(self, baudrate=DEFAULT_BAUD_RATE):
-        """! Open remote connection to DUT """
+        """Open remote connection to DUT."""
         self.logger.prn_inf(
             "opening connection to platform at baudrate='%s'" % baudrate
         )
@@ -115,7 +124,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             )
 
     def __remote_reset(self, delay=0):
-        """! Use GRM remote API to reset DUT """
+        """Use GRM remote API to reset DUT."""
         self.logger.prn_inf("remote resources reset...")
         if not self.selected_resource:
             raise Exception("remote resource not exists!")
@@ -132,7 +141,7 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             time.sleep(delay)
 
     def __remote_flashing(self, filename, forceflash=False):
-        """! Use GRM remote API to flash DUT """
+        """Use GRM remote API to flash DUT."""
         self.logger.prn_inf("remote resources flashing with '%s'..." % filename)
         if not self.selected_resource:
             raise Exception("remote resource not exists!")
@@ -144,7 +153,14 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             raise
 
     def read(self, count):
-        """! Read 'count' bytes of data from DUT """
+        """Read data from DUT.
+
+        Args:
+            count: number of bytes of data to read.
+
+        Returns:
+            Data read.
+        """
         if not self.connected():
             raise Exception("remote resource not exists!")
         data = str()
@@ -157,7 +173,15 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         return data
 
     def write(self, payload, log=False):
-        """! Write 'payload' to DUT """
+        """Write to DUT.
+
+        Args:
+            payload: data to write to the DUT.
+            log: If true, log the transmission.
+
+        Returns:
+            True if successful, else False.
+        """
         if self.connected():
             try:
                 self.selected_resource.write(payload)
@@ -170,9 +194,15 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         return False
 
     def flush(self):
+        """Flush ignored with remote target."""
         pass
 
     def allocated(self):
+        """Check if resources allocated for remote target.
+
+        Returns:
+            True if resources allocated for remote target.
+        """
         return (
             self.remote_module
             and self.selected_resource
@@ -180,6 +210,11 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
         )
 
     def connected(self):
+        """Check if connected to remote target.
+
+        Returns:
+            True if resources allocated and resource is connected, else False.
+        """
         return self.allocated() and self.selected_resource.is_connected
 
     def __remote_release(self):
@@ -193,14 +228,15 @@ class RemoteConnectorPrimitive(ConnectorPrimitive):
             )
 
     def finish(self):
-        # Finally once we're done with the resource
-        # we disconnect and release the allocation
+        """Disconnect and release the allocated resources."""
         if self.allocated():
             self.__remote_disconnect()
             self.__remote_release()
 
     def reset(self):
+        """Reset the DUT."""
         self.__remote_reset(delay=self.forced_reset_timeout)
 
     def __del__(self):
+        """Finish use of object before deletion."""
         self.finish()

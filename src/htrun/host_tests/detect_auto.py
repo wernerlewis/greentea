@@ -2,19 +2,23 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Host test to check if DUT target name matches expectation."""
 import re
 from .. import BaseHostTest
 
 
 class DetectPlatformTest(BaseHostTest):
-    PATTERN_MICRO_NAME = "Target '(\w+)'"
+    """Host test which checks if DUT target name matches expected."""
+
+    PATTERN_MICRO_NAME = r"Target '(\w+)'"
     re_detect_micro_name = re.compile(PATTERN_MICRO_NAME)
 
     def result(self):
+        """Not required in this test."""
         raise NotImplementedError
 
     def test(self, selftest):
+        """Search for target name in DUT serial."""
         result = True
 
         c = selftest.mbed.serial_readline()  # {{start}} preamble

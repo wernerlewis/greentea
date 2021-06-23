@@ -2,20 +2,17 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Plugin for ARM_MPS2 platforms. Not fully functional."""
 import os
 import time
 
 from .host_test_plugins import HostTestPluginBase
 
-# Note: This plugin is not fully functional, needs improvements
-
 
 class HostTestPluginResetMethod_MPS2(HostTestPluginBase):
-    """! Plugin used to reset ARM_MPS2 platform
+    """Plugin used to reset ARM_MPS2 platform.
 
-    @details Supports:
-             reboot.txt   - startup from standby state, reboots when in run mode.
+    Supports: reboot.txt to startup from standby state, reboots when in run mode.
     """
 
     # Plugin interface
@@ -25,31 +22,32 @@ class HostTestPluginResetMethod_MPS2(HostTestPluginBase):
     required_parameters = ["disk"]
 
     def __init__(self):
-        """ctor"""
+        """Initialise object."""
         HostTestPluginBase.__init__(self)
 
     def touch_file(self, path):
-        """Touch file and set timestamp to items"""
+        """Touch file and set timestamp to items.
+
+        Args:
+            path: Path of file to touch.
+        """
         with open(path, "a"):
             os.utime(path, None)
 
     def setup(self, *args, **kwargs):
-        """Prepare / configure plugin to work.
-        This method can receive plugin specific parameters by kwargs and
-        ignore other parameters which may affect other plugins.
-        """
+        """Configure plugin."""
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """! Executes capability by name
+        """Execute capability by name.
 
-        @param capability Capability name
-        @param args Additional arguments
-        @param kwargs Additional arguments
+        Args:
+            capability: Capability name, reboot.txt to reset board.
+            args: Additional arguments.
+            kwargs: Additional arguments.
 
-        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-
-        @return Capability call return value
+        Returns:
+            True if copy successful, else False.
         """
         result = False
         if not kwargs["disk"]:
@@ -78,5 +76,9 @@ class HostTestPluginResetMethod_MPS2(HostTestPluginBase):
 
 
 def load_plugin():
-    """Returns plugin available in this module"""
+    """Get plugin available in this module.
+
+    Returns:
+        Plugin object.
+    """
     return HostTestPluginResetMethod_MPS2()

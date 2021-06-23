@@ -13,3 +13,6 @@ ignore =
     W503,
     # E203: whitespace before ':' (this is not PEP8 compliant)
     E203,
+per_file_ignores =
+    # F401: imported but not used
+    __init__.py:F401

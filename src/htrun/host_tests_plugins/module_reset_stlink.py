@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Reset plugin for STLink."""
 import os
 import sys
 import tempfile
@@ -12,6 +12,7 @@ FIX_FILE_NAME = "enter_file.txt"
 
 
 class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
+    """Reset plugin for STLink."""
 
     # Plugin interface
     name = "HostTestPluginResetMethod_Stlink"
@@ -21,11 +22,18 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
     stable = False
 
     def __init__(self):
-        """ctor"""
+        """Initialise object."""
         HostTestPluginBase.__init__(self)
 
     def is_os_supported(self, os_name=None):
-        """! In this implementation this plugin only is supporeted under Windows machines"""
+        """Check if OS supported by plugin.
+
+        Args:
+            os_name: Name of the OS.
+
+        Returns:
+            True if OS is Windows, else False.
+        """
         # If no OS name provided use host OS name
         if not os_name:
             os_name = self.host_os_support()
@@ -36,16 +44,19 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
         return False
 
     def setup(self, *args, **kwargs):
-        """! Configure plugin, this function should be called before plugin execute() method is used."""
+        """Configure plugin."""
         # Note you need to have eACommander.exe on your system path!
         self.ST_LINK_CLI = "ST-LINK_CLI.exe"
         return True
 
     def create_stlink_fix_file(self, file_path):
-        """! Creates a file with a line separator
-        This is to work around a bug in ST-LINK CLI that does not let the target run after burning it.
-        See https://github.com/ARMmbed/mbed-os-tools/issues/147 for the details.
-        @param file_path A path to write into this file
+        """Create a file with a line separator.
+
+        This is to work around a bug in ST-LINK CLI that does not let the target run
+        after burning it.See https://github.com/ARMmbed/mbed-os-tools/issues/147.
+
+        Args:
+            file_path: Path to write file to.
         """
         try:
             with open(file_path, "w") as fix_file:
@@ -55,15 +66,15 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
             sys.exit(1)
 
     def execute(self, capability, *args, **kwargs):
-        """! Executes capability by name
+        """Execute capability by name.
 
-        @param capability Capability name
-        @param args Additional arguments
-        @param kwargs Additional arguments
+        Args:
+            capability: Capability name, stlink to reset.
+            args: Additional arguments.
+            kwargs: Additional arguments.
 
-        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-
-        @return Capability call return value
+        Returns:
+            True if copy successful, else False.
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
@@ -73,8 +84,9 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
                 cmd = [self.ST_LINK_CLI, "-Rst", "-Run"]
 
                 # Due to the ST-LINK bug, we must press enter after burning the target
-                # We do this here automatically by passing a file which contains an `ENTER` (line separator)
-                # to the ST-LINK CLI as `stdin` for the running process
+                # We do this here automatically by passing a file which contains an
+                # `ENTER` (line separator) to the ST-LINK CLI as `stdin` for the running
+                # process
                 enter_file_path = os.path.join(tempfile.gettempdir(), FIX_FILE_NAME)
                 self.create_stlink_fix_file(enter_file_path)
                 try:
@@ -89,5 +101,9 @@ class HostTestPluginResetMethod_Stlink(HostTestPluginBase):
 
 
 def load_plugin():
-    """Returns plugin available in this module"""
+    """Get plugin available in this module.
+
+    Returns:
+        Plugin object.
+    """
     return HostTestPluginResetMethod_Stlink()

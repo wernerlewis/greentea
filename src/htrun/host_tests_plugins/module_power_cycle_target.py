@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Plugin to reset a remote Mbed device."""
 import os
 import json
 import time
@@ -11,6 +11,7 @@ from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
+    """Reset plugin for remote Mbed devices."""
 
     # Plugin interface
     name = "HostTestPluginPowerCycleResetMethod"
@@ -20,21 +21,23 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
     required_parameters = ["target_id", "device_info"]
 
     def __init__(self):
-        """ctor"""
+        """Initialise object."""
         HostTestPluginBase.__init__(self)
 
     def setup(self, *args, **kwargs):
-        """! Configure plugin, this function should be called before plugin execute() method is used."""
+        """Configure plugin."""
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """! Executes capability by name
+        """Execute capability by name.
 
-        @param capability Capability name
-        @param args Additional arguments
-        @param kwargs Additional arguments
-        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-        @return Capability call return value
+        Args:
+            capability: Capability name, shutil to copy.
+            args: Additional arguments.
+            kwargs: Additional arguments.
+
+        Returns:
+            True if copy successful, else False.
         """
         if "target_id" not in kwargs or not kwargs["target_id"]:
             self.print_plugin_error("Error: This plugin requires unique target_id")
@@ -42,7 +45,8 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
 
         if "device_info" not in kwargs or type(kwargs["device_info"]) is not dict:
             self.print_plugin_error(
-                "Error: This plugin requires dict parameter 'device_info' passed by the caller."
+                "Error: This plugin requires dict parameter "
+                "'device_info' passed by the caller."
             )
             return False
 
@@ -58,9 +62,10 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
         return result
 
     def __get_mbed_tas_rm_addr(self):
-        """
-        Get IP and Port of mbed tas rm service.
-        :return:
+        """Get IP and Port of mbed tas rm service.
+
+        Returns:
+            Tuple of IP and port, None if environment variables could not be read.
         """
         try:
             ip = os.environ["MBED_TAS_RM_IP"]
@@ -76,16 +81,17 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
         return None
 
     def __hw_reset(self, ip, port, target_id, device_info):
-        """
-        Reset target device using TAS RM API
+        """Reset target device using TAS RM API.
 
-        :param ip:
-        :param port:
-        :param target_id:
-        :param device_info:
-        :return:
-        """
+        Args:
+            ip: IP address to send to.
+            port: Port to use.
+            target_id: ID of the target to reset.
+            device_info: Dictionary to add device info to.
 
+        Returns:
+            True on success, else False.
+        """
         switch_off_req = {
             "name": "switchResource",
             "sub_requests": [
@@ -124,6 +130,14 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
             return result
 
         def poll_state(required_state):
+            """Request state of target.
+
+            Args:
+                required_state: State required for target.
+
+            Returns:
+                True if success, else False.
+            """
             switch_state_req = {
                 "name": "switchResource",
                 "sub_requests": [
@@ -170,10 +184,15 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
 
     @staticmethod
     def __run_request(ip, port, request):
-        """
+        """Send a request.
 
-        :param request:
-        :return:
+        Args:
+            ip: IP address to send to.
+            port: Port to use.
+            request: JSON format data to send in request.
+
+        Returns:
+            JSON response if success, else None.
         """
         headers = {"Content-type": "application/json", "Accept": "text/plain"}
         get_resp = requests.get(
@@ -187,5 +206,9 @@ class HostTestPluginPowerCycleResetMethod(HostTestPluginBase):
 
 
 def load_plugin():
-    """! Returns plugin available in this module"""
+    """Get plugin available in this module.
+
+    Returns:
+        Plugin object.
+    """
     return HostTestPluginPowerCycleResetMethod()

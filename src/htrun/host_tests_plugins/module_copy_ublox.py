@@ -2,12 +2,14 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Copy plugin for ublox platform."""
 import os
+
 from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_ublox(HostTestPluginBase):
+    """Flashing method for ublox platform."""
 
     # Plugin interface
     name = "HostTestPluginCopyMethod_ublox"
@@ -16,7 +18,14 @@ class HostTestPluginCopyMethod_ublox(HostTestPluginBase):
     required_parameters = ["image_path"]
 
     def is_os_supported(self, os_name=None):
-        """! In this implementation this plugin only is supporeted under Windows machines"""
+        """Check if OS supported by plugin.
+
+        Args:
+            os_name: Name of the OS.
+
+        Returns:
+            True if OS is Windows, else False.
+        """
         # If no OS name provided use host OS name
         if not os_name:
             os_name = self.host_os_support()
@@ -27,20 +36,23 @@ class HostTestPluginCopyMethod_ublox(HostTestPluginBase):
         return False
 
     def setup(self, *args, **kwargs):
-        """! Configure plugin, this function should be called before plugin execute() method is used."""
+        """Configure plugin.
+
+        Should be called before execute() method is used.
+        """
         self.FLASH_ERASE = "FlashErase.exe"
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """! Executes capability by name
+        """Execute capability by name.
 
-        @param capability Capability name
-        @param args Additional arguments
-        @param kwargs Additional arguments
+        Args:
+            capability: Capability name, ublox to copy.
+            args: Additional arguments.
+            kwargs: Additional arguments.
 
-        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-
-        @return Capability call return value
+        Returns:
+            Value returned by executed capability.
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
@@ -64,5 +76,9 @@ class HostTestPluginCopyMethod_ublox(HostTestPluginBase):
 
 
 def load_plugin():
-    """Returns plugin available in this module"""
+    """Get plugin available in this module.
+
+    Returns:
+        Plugin object.
+    """
     return HostTestPluginCopyMethod_ublox()

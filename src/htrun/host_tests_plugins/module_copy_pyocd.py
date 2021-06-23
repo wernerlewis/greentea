@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Plugin for copy with pyOCD."""
 import os
 from .host_test_plugins import HostTestPluginBase
 
@@ -16,6 +16,8 @@ except ImportError:
 
 
 class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
+    """PyOCD copy plugin."""
+
     # Plugin interface
     name = "HostTestPluginCopyMethod_pyOCD"
     type = "CopyMethod"
@@ -24,19 +26,23 @@ class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
     required_parameters = ["image_path", "target_id"]
 
     def __init__(self):
-        """ctor"""
+        """Initialise object."""
         HostTestPluginBase.__init__(self)
 
     def setup(self, *args, **kwargs):
-        """Configure plugin, this function should be called before plugin execute() method is used."""
+        """Configure plugin."""
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """! Executes capability by name
-        @param capability Capability name
-        @param args Additional arguments
-        @param kwargs Additional arguments
-        @return Capability call return value
+        """Execute capability by name.
+
+        Args:
+            capability: Capability name, pyocd to reset.
+            args: Additional arguments.
+            kwargs: Additional arguments.
+
+        Returns:
+            True if reset successful, else False.
         """
         if not PYOCD_PRESENT:
             self.print_plugin_error(
@@ -84,5 +90,9 @@ class HostTestPluginCopyMethod_pyOCD(HostTestPluginBase):
 
 
 def load_plugin():
-    """Returns plugin available in this module"""
+    """Get plugin available in this module.
+
+    Returns:
+        Plugin object.
+    """
     return HostTestPluginCopyMethod_pyOCD()

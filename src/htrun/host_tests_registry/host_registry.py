@@ -2,74 +2,87 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
-try:
-    from imp import load_source
-except ImportError:
-    import importlib
-    import sys
-
-    def load_source(module_name, file_path):
-        spec = importlib.util.spec_from_file_location(module_name, file_path)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        sys.modules[module_name] = module
-        return module
-
+"""Registry to store and access available host tests."""
+import importlib
+import sys
 
 from inspect import getmembers, isclass
 from os import listdir
 from os.path import abspath, exists, isdir, isfile, join
+from prettytable import PrettyTable, HEADER
 
 from ..host_tests.base_host_test import BaseHostTest
 
 
+def load_source(module_name, file_path):
+    """Load source of a module.
+
+    Args:
+        module_name: Name of the module to load.
+        file_path: Path to load the module from.
+
+    Returns:
+        Loaded module.
+    """
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[module_name] = module
+    return module
+
+
 class HostRegistry:
-    """Class stores registry with host tests and objects representing them"""
+    """Registry storing host tests and objects representing them."""
 
     HOST_TESTS = {}  # Map between host_test_name -> host_test_object
 
     def register_host_test(self, ht_name, ht_object):
-        """! Registers host test object by name
+        """Register a host test object by name.
 
-        @param ht_name Host test unique name
-        @param ht_object Host test class object
+        Args:
+            ht_name: Unique name of the host test.
+            ht_object: Host test class object.
         """
         if ht_name not in self.HOST_TESTS:
             self.HOST_TESTS[ht_name] = ht_object
 
     def unregister_host_test(self, ht_name):
-        """! Unregisters host test object by name
+        """Unregister host test object.
 
-        @param ht_name Host test unique name
+        Args:
+            ht_name: Name of host test to unregister.
         """
         if ht_name in self.HOST_TESTS:
             del self.HOST_TESTS[ht_name]
 
     def get_host_test(self, ht_name):
-        """! Fetches host test object by name
+        """Fetch host test object.
 
-        @param ht_name Host test unique name
+        Args:
+            ht_name: Name of the host test.
 
-        @return Host test callable object or None if object is not found
+        Returns:
+            Callable host test object, or None if object is not found.
         """
         return self.HOST_TESTS[ht_name] if ht_name in self.HOST_TESTS else None
 
     def is_host_test(self, ht_name):
-        """! Checks (by name) if host test object is registered already
+        """Check (by name) if host test object is registered already.
 
-        @param ht_name Host test unique name
+        Args:
+            ht_name: Name to check.
 
-        @return True if ht_name is registered (available), else False
+        Returns:
+            True if ht_name is registered (available), else False.
         """
         return ht_name in self.HOST_TESTS and self.HOST_TESTS[ht_name] is not None
 
     def table(self, verbose=False):
-        """! Prints list of registered host test classes (by name)
-        @Detail For devel & debug purposes
-        """
-        from prettytable import PrettyTable, HEADER
+        """Print table of registered host test classes (by name).
 
+        Returns:
+            String representation of table.
+        """
         column_names = ["name", "class", "origin"]
         pt = PrettyTable(column_names, junction_char="|", hrules=HEADER)
         for column in column_names:
@@ -85,8 +98,13 @@ class HostRegistry:
         return pt.get_string()
 
     def register_from_path(self, path, verbose=False):
-        """Enumerates and registers locally stored host tests
-        Host test are derived from htrun.BaseHostTest classes
+        """Enumerate and register locally stored host tests.
+
+        Host tests must be derived from htrun.BaseHostTest classes.
+
+        Args:
+            path: Path to register host tests from.
+            verbose: Print a message for each module loaded.
         """
         if path:
             path = path.strip('"')

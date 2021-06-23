@@ -2,12 +2,13 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Copy plugin for SiLabs."""
 import os
 from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_Silabs(HostTestPluginBase):
+    """Copy plugin for SiLabs platform."""
 
     # Plugin interface
     name = "HostTestPluginCopyMethod_Silabs"
@@ -17,24 +18,24 @@ class HostTestPluginCopyMethod_Silabs(HostTestPluginBase):
     stable = True
 
     def __init__(self):
-        """ctor"""
+        """Initialise object."""
         HostTestPluginBase.__init__(self)
 
     def setup(self, *args, **kwargs):
-        """Configure plugin, this function should be called before plugin execute() method is used."""
+        """Configure plugin."""
         self.EACOMMANDER_CMD = "eACommander.exe"
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """! Executes capability by name
+        """Execute capability by name.
 
-        @param capability Capability name
-        @param args Additional arguments
-        @param kwargs Additional arguments
+        Args:
+            capability: Capability name, eACommander or eACommander-usb to copy.
+            args: Additional arguments.
+            kwargs: Additional arguments.
 
-        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-
-        @return Capability call return value
+        Returns:
+            True if copy successful, else False.
         """
         result = False
         if self.check_parameters(capability, *args, **kwargs) is True:
@@ -65,5 +66,9 @@ class HostTestPluginCopyMethod_Silabs(HostTestPluginBase):
 
 
 def load_plugin():
-    """Returns plugin available in this module"""
+    """Get plugin available in this module.
+
+    Returns:
+        Plugin object.
+    """
     return HostTestPluginCopyMethod_Silabs()

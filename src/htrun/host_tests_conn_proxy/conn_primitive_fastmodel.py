@@ -2,14 +2,15 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
-import telnetlib
-import socket
+"""Basic connector interface for use with fastmodels."""
 from .conn_primitive import ConnectorPrimitive, ConnectorPrimitiveException
 
 
 class FastmodelConnectorPrimitive(ConnectorPrimitive):
+    """Connector interface for use with fastmodels."""
+
     def __init__(self, name, config):
+        """Initialise object."""
         ConnectorPrimitive.__init__(self, name)
         self.config = config
         self.fm_config = config.get("fm_config", None)
@@ -24,20 +25,28 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
         # Initialize FastModel
         if self.__fastmodel_init():
 
-            # FastModel Launch load and run, equivalent to DUT connection, flashing and reset...
+            # Equivalent to DUT connection, flashing and reset...
             self.__fastmodel_launch()
             self.__fastmodel_load(self.image_path)
             self.__fastmodel_run()
 
     def __fastmodel_init(self):
-        """! Initialize models using fm_agent APIs """
+        """Initialise models using fm_agent APIs.
+
+        Returns:
+            True on success.
+
+        Raises:
+            ConnectorPrimitiveException if fm_agent cannot be loaded or initialised.
+        """
         self.logger.prn_inf("Initializing FastModel...")
 
         try:
             self.fm_agent_module = __import__("fm_agent")
         except ImportError as e:
             self.logger.prn_err(
-                "unable to load mbed-fastmodel-agent module. Check if the module install correctly."
+                "unable to load mbed-fastmodel-agent module. "
+                "Check the module installed correctly."
             )
             self.fm_agent_module = None
             self.logger.prn_err("Importing failed : %s" % str(e))
@@ -56,12 +65,16 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
         return True
 
     def __fastmodel_launch(self):
-        """! launch the FastModel"""
+        """Launch the FastModel.
+
+        Raises:
+            ConnectorPrimitiveException if fails to start simulator.
+        """
         self.logger.prn_inf("Launching FastModel...")
         try:
             if not self.resource.start_simulator():
                 raise ConnectorPrimitiveException(
-                    "FastModel running failed, run_simulator() return False!"
+                    "FastModel running failed, start_simulator() returned False!"
                 )
         except self.fm_agent_module.SimulatorError as e:
             self.logger.prn_err("start_simulator() failed: %s" % str(e))
@@ -70,12 +83,16 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
             )
 
     def __fastmodel_run(self):
-        """! Use fm_agent API to run the FastModel """
+        """Use fm_agent API to run the FastModel.
+
+        Raises:
+            ConnectorPrimitiveException if fails to run simulator.
+        """
         self.logger.prn_inf("Running FastModel...")
         try:
             if not self.resource.run_simulator():
                 raise ConnectorPrimitiveException(
-                    "FastModel running failed, run_simulator() return False!"
+                    "FastModel running failed, run_simulator() returned False!"
                 )
         except self.fm_agent_module.SimulatorError as e:
             self.logger.prn_err("run_simulator() failed: %s" % str(e))
@@ -84,12 +101,18 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
             )
 
     def __fastmodel_load(self, filename):
-        """! Use fm_agent API to load image to FastModel, this is functional equivalent to flashing DUT"""
+        """Use fm_agent API to load image to FastModel.
+
+        Functional equivalent to flashing DUT.
+
+        Raises:
+            ConnectorPrimitiveException if fails to load simulator.
+        """
         self.logger.prn_inf("loading FastModel with image '%s'..." % filename)
         try:
             if not self.resource.load_simulator(filename):
                 raise ConnectorPrimitiveException(
-                    "FastModel loading failed, load_simulator() return False!"
+                    "FastModel loading failed, load_simulator() returned False!"
                 )
         except self.fm_agent_module.SimulatorError as e:
             self.logger.prn_err("run_simulator() failed: %s" % str(e))
@@ -98,8 +121,10 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
             )
 
     def __resource_allocated(self):
-        """! Check whether FastModel resource been allocated
-        @return True or throw an exception
+        """Check whether FastModel resource has been allocated.
+
+        Returns:
+            True if resource allocated, else False.
         """
         if self.resource:
             return True
@@ -108,8 +133,14 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
             return False
 
     def read(self, count):
-        """! Read data from DUT, count is not used for FastModel"""
-        date = str()
+        """Read data from FastModel.
+
+        Args:
+            count: not used for FastModel.
+
+        Returns:
+            Data read from fastmodel, False if resource not allocated.
+        """
         if self.__resource_allocated():
             try:
                 data = self.resource.read()
@@ -123,7 +154,15 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
             return False
 
     def write(self, payload, log=False):
-        """! Write 'payload' to DUT"""
+        """Write to FastModel.
+
+        Args:
+            payload: data to write to the DUT.
+            log: If true, log the transmission.
+
+        Returns:
+            True if successful, else False.
+        """
         if self.__resource_allocated():
             if log:
                 self.logger.prn_txd(payload)
@@ -139,18 +178,22 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
             return False
 
     def flush(self):
-        """! flush not supported in FastModel_module"""
+        """Not supported with FastModel."""
         pass
 
     def connected(self):
-        """! return whether FastModel is connected """
+        """Check if FastModel is connected.
+
+        Returns:
+            True if FastModel is connected.
+        """
         if self.__resource_allocated():
             return self.resource.is_simulator_alive
         else:
             return False
 
     def finish(self):
-        """! shutdown the FastModel and release the allocation """
+        """Shutdown the FastModel and release the allocation."""
         if self.__resource_allocated():
             try:
                 self.resource.shutdown_simulator()
@@ -161,6 +204,7 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
                 )
 
     def reset(self):
+        """Reset fastmodel simulator."""
         if self.__resource_allocated():
             try:
                 if not self.resource.reset_simulator():
@@ -173,4 +217,5 @@ class FastmodelConnectorPrimitive(ConnectorPrimitive):
                 )
 
     def __del__(self):
+        """Shutdown fastmodel before deletion."""
         self.finish()

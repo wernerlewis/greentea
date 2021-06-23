@@ -2,12 +2,13 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
-
+"""Copy plugin for JN51xx platform."""
 import os
 from .host_test_plugins import HostTestPluginBase
 
 
 class HostTestPluginCopyMethod_JN51xx(HostTestPluginBase):
+    """Copy plugin for JN51xx."""
 
     # Plugin interface
     name = "HostTestPluginCopyMethod_JN51xx"
@@ -16,11 +17,18 @@ class HostTestPluginCopyMethod_JN51xx(HostTestPluginBase):
     required_parameters = ["image_path", "serial"]
 
     def __init__(self):
-        """ctor"""
+        """Initialise object."""
         HostTestPluginBase.__init__(self)
 
     def is_os_supported(self, os_name=None):
-        """! In this implementation this plugin only is supporeted under Windows machines"""
+        """Check if OS supported by plugin.
+
+        Args:
+            os_name: Name of the OS.
+
+        Returns:
+            True if OS is Windows, else False.
+        """
         # If no OS name provided use host OS name
         if not os_name:
             os_name = self.host_os_support()
@@ -31,18 +39,23 @@ class HostTestPluginCopyMethod_JN51xx(HostTestPluginBase):
         return False
 
     def setup(self, *args, **kwargs):
-        """! Configure plugin, this function should be called before plugin execute() method is used."""
+        """Configure plugin.
+
+        Should be called before execute() method is used.
+        """
         self.JN51XX_PROGRAMMER = "JN51xxProgrammer.exe"
         return True
 
     def execute(self, capability, *args, **kwargs):
-        """! Executes capability by name
+        """Execute capability by name.
 
-        @param capability Capability name
-        @param args Additional arguments
-        @param kwargs Additional arguments
-        @details Each capability e.g. may directly just call some command line program or execute building pythonic function
-        @return Capability call return value
+        Args:
+            capability: Capability name, jn51xx to copy.
+            args: Additional arguments.
+            kwargs: Additional arguments.
+
+        Returns:
+            Value returned by executed capability.
         """
         if not kwargs["image_path"]:
             self.print_plugin_error("Error: image path not specified")
@@ -73,5 +86,9 @@ class HostTestPluginCopyMethod_JN51xx(HostTestPluginBase):
 
 
 def load_plugin():
-    """Returns plugin available in this module"""
+    """Get plugin available in this module.
+
+    Returns:
+        Plugin object.
+    """
     return HostTestPluginCopyMethod_JN51xx()
