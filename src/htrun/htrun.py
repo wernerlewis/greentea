@@ -2,9 +2,11 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
+"""Entry point for Host Test Runner (htrun)."""
+import pkg_resources
 
-# Greentea Host Tests Runner
 from multiprocessing import freeze_support
+
 from htrun import init_host_test_cli_params
 from htrun.host_tests_runner.host_test_default import DefaultTestSelector
 from htrun.host_tests_toolbox.host_functional import handle_send_break_cmd
@@ -20,8 +22,6 @@ def main():
     cli_params = init_host_test_cli_params()
 
     if cli_params.version:  # --version
-        import pkg_resources  # part of setuptools
-
         version = pkg_resources.require("htrun")[0].version
         print(version)
     elif cli_params.send_break_cmd:  # -b with -p PORT (and optional -r RESET_TYPE)

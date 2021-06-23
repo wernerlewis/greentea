@@ -6,6 +6,9 @@
 import six
 import sys
 import unittest
+import os
+import shutil
+import tempfile
 
 from greentea import greentea_cli
 from greentea.gtea.tests_spec import TestSpec
@@ -87,10 +90,6 @@ class GreenteaCliFunctionality(unittest.TestCase):
         self.assertEqual(test_path, path)
 
     def test_get_local_host_tests_dir_default_path(self):
-        import os
-        import shutil
-        import tempfile
-
         curr_dir = os.getcwd()
         test1_dir = tempfile.mkdtemp()
         test2_dir = os.mkdir(os.path.join(test1_dir, "test"))

@@ -5,6 +5,8 @@
 
 import os
 import unittest
+import tempfile
+
 from greentea.gtea import coverage_api
 
 
@@ -33,8 +35,6 @@ class GreenteaCoverageAPI(unittest.TestCase):
         self.assertEqual(bytearray(b"\x00adcgr\x00"), r)
 
     def test_coverage_dump_file_valid(self):
-        import tempfile
-
         payload = bytearray(b"PAYLOAD")
         handle, path = tempfile.mkstemp("test_file")
         coverage_api.coverage_dump_file(".", path, payload)

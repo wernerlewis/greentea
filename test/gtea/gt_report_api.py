@@ -10,6 +10,7 @@ import tempfile
 import unittest
 
 from greentea.gtea import report_api
+from xml.etree import ElementTree as ET
 
 
 class GreenteaReportApiFunctionality(unittest.TestCase):
@@ -140,8 +141,6 @@ class GreenteaReportApiFunctionality(unittest.TestCase):
     def test_exporter_testcase_junit(self):
         result = report_api.exporter_testcase_junit(self.test_case_data)
         self.assertIsNotNone(result)
-
-        from xml.etree import ElementTree as ET
 
         xml = ET.fromstring(result)
 

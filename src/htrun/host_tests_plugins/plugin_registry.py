@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Arm Limited and Contributors. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
+from prettytable import PrettyTable, HEADER
 
 
 class HostTestPluginRegistry:
@@ -81,8 +82,6 @@ class HostTestPluginRegistry:
         """! User friendly printing method to show hooked plugins
         @return Returns string formatted with PrettyTable
         """
-        from prettytable import PrettyTable, HEADER
-
         column_names = [
             "name",
             "type",

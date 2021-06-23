@@ -8,7 +8,9 @@ import os
 import sys
 import json
 import string
+
 from subprocess import Popen, PIPE, STDOUT
+from prettytable import PrettyTable, HEADER
 
 from .coverage_api import coverage_dump_file, coverage_pack_hex_payload
 from .greentea_log import gt_logger
@@ -521,8 +523,6 @@ def log_devices_in_table(
     Returns:
         String with formatted prettytable.
     """
-    from prettytable import PrettyTable, HEADER
-
     pt = PrettyTable(cols, junction_char="|", hrules=HEADER)
     for col in cols:
         pt.align[col] = "l"

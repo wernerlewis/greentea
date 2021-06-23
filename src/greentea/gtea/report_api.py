@@ -7,6 +7,8 @@ import json
 import datetime
 
 from pathlib import Path
+from prettytable import PrettyTable, HEADER
+from junit_xml import TestSuite, TestCase
 
 
 def export_to_file(file_name, payload):
@@ -55,8 +57,6 @@ def exporter_text(test_result_ext):
     Returns:
         Tuple of table of results and result quantity summary string.
     """
-    from prettytable import PrettyTable, HEADER
-
     cols = [
         "target",
         "platform_name",
@@ -108,8 +108,6 @@ def exporter_testcase_text(test_result_ext):
     Returns:
         Tuple with table of results and result quantity summary string.
     """
-    from prettytable import PrettyTable, HEADER
-
     cols = [
         "target",
         "platform_name",
@@ -183,8 +181,6 @@ def exporter_testcase_junit(test_result_ext, test_suite_properties=None):
     Returns:
         String containing Junit XML formatted test result output.
     """
-    from junit_xml import TestSuite, TestCase
-
     test_suites = []
 
     for target_name in test_result_ext:

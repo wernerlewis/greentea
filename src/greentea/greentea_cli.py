@@ -8,11 +8,11 @@ import random
 import argparse
 import imp
 import io
-from time import time
+import pkg_resources  # part of setuptools
 
+from time import time
 from queue import Queue
 from threading import Thread
-
 
 from greentea.gtea.test_api import (
     get_test_build_properties,
@@ -59,8 +59,6 @@ def get_greentea_version():
     Returns:
         String representation of the Greentea version.
     """
-    import pkg_resources  # part of setuptools
-
     version = pkg_resources.require("mbed-greentea")[0].version
     return version
 
